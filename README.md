@@ -14,7 +14,7 @@ This project is aiming at achieving:
 - **SimulateEnv**: Unity3D 2021.3.7f1 + ROS-TCP-Connector + URDF Importer
 - **PhysicalENv**: EFM
 
-![alt text](src/resources/images/StructureV2.0.jpg)
+![Structure](src/resources/images/StructureV2.0.jpg)
 
 ### 2.1. ROS2 Packages Description
 ***dtefm***: Digital Twin EFM (also sorter)
