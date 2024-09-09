@@ -1,0 +1,5 @@
+geometry_msgs/Pose target_pose
+int32 target_claw
+dtefm_interfaces/SRStateRobot current_state
+---
+dtefm_interfaces/SRStateRobot target_state

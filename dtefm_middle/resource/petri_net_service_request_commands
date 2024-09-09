@@ -1,0 +1,30 @@
+(Mov Add Place)     |   MADP    | name, mark    |   state_, net_        (finished)
+(Mov Del Place)     |   MDLP    |               |   state_, net_
+(Mov Add Trans)     |   MADT    | name          |   state_, net_        (finished)
+(Mov Del Trans)     |   MDLT    |               |   state_, net_
+(Mov Add Arcs)      |   MADA    | dir, n_i, n_o |   state_, net_        (finished)
+(Mov Del Arcs)      |   MDLA    |               |   state_, net_
+
+(Mov Del Net)       |   MDLN    |               |   state_, net_        (finished)
+
+(Mov Fire Trans)    |   MFRT    |  name         |   state_, net_        (finished)
+
+(Reset Net)         |   SRSN    |               |                       (finished)
+(Set Inital Mark)   |   SIMK    |               |   state_, net_
+(Set Place Mark)    |   SPMK    | name, mark    |   state_, net_
+
+(Ref State)         |   RSTS    |               |   state, net_         (finished)
+(Ref Net)           |   RNET    |               |   state, net_         (finished)
+(Prin Net)          |   RPRN    |               |   state, net_         (finished)
+
+
+test:
+
+MADP
+['p1', '{\'0\':25}']
+
+MADT
+['t1']
+
+MADA
+['PtoT', 'p1', 't1']

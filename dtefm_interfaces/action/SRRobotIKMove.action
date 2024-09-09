@@ -1,0 +1,13 @@
+# Goal
+geometry_msgs/Pose target_pose
+int32 target_claw
+dtefm_interfaces/SRStateRobot current_state
+---
+# Result
+dtefm_interfaces/SRStateRobot final_state
+---
+# Feedback
+dtefm_interfaces/SRStateRobot feedback_state
+uint32 status
+uint32 STATUS_MOVING = 3
+uint32 STATUS_STOP = 4

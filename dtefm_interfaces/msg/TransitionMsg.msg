@@ -1,0 +1,10 @@
+string id
+string name
+string[] ins
+string[] outs
+string[] in_arcs
+string[] out_arcs
+string status
+string work_status
+float32 time
+int32 priority

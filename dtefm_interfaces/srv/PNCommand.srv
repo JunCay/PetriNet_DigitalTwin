@@ -1,0 +1,6 @@
+string command
+string[] args
+---
+dtefm_interfaces/PlaceMsg[] places
+dtefm_interfaces/TransitionMsg[] transitions
+dtefm_interfaces/ArcMsg[] arcs

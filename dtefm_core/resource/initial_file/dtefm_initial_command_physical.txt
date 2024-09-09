@@ -1,0 +1,4 @@
+$,1,<seq>,INIT,1,1,G,
+$,1,<seq>,SSPD,1,H,G,%0000010,
+$,1,<seq>,SSLV,1,
+$,2,<seq>,INIT,1,1,N,
