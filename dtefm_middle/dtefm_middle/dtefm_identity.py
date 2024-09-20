@@ -33,6 +33,7 @@ class Identity(Node):
         self.identity_pn = PlainNet('identity_pn')
         self.pn_server_ = self.create_service(PNCommand, '/identity/pn_srv', self.pn_server_callback)
         self.pn_updator_ = self.create_publisher(PetriNet, 'identity/pn/update', 10)
+        # self.pn_decision_client = self.create_client()
         self.dt = 0.5
         self.pn_timer = self.create_timer(self.dt, self.pn_timer_callback)
         
@@ -131,7 +132,7 @@ class Identity(Node):
             self.identity_pn.reset_net()
         elif command == 'SPMK':
             place_name = args[0]
-            new_mark = args[1]
+            new_mark = eval(args[1])
             self.identity_pn.name_node[place_name].set_mark(new_mark)
             self.get_logger().info(f'set place [{place_name}] marking to {self.identity_pn.name_node[place_name].marking}')
         elif command == 'RSTS':

@@ -45,9 +45,6 @@ class IdentityInitializer(Node):
         for request in request_sequence[1]:
             client.call_async(request)
             time.sleep(0.01)
-            
-        
-        
                 
                 
 def main(args=None):
