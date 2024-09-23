@@ -12,6 +12,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'resource', 'pntk'), glob('resource/pntk/*.py')),
+        (os.path.join('share', package_name, 'resource', 'rltk'), glob('resource/rltk/*.py')),
         (os.path.join('share', package_name, 'resource', 'srtk'), glob('resource/srtk/*.py')),
     ],
     install_requires=['setuptools'],
@@ -24,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'identity = dtefm_middle.dtefm_identity:main',
+            'intension_generator = dtefm_middle.dtefm_intension_generator:main',
             'sr_robot_ik_server = dtefm_middle.dtefm_sr_IK_server:main',
         ],
     },

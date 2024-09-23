@@ -23,6 +23,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/PlaceMsg.msg"
   "msg/TransitionMsg.msg"
   "msg/ArcMsg.msg"
+  "msg/GCPNStateMsg.msg"
   "srv/EAPCommandAnalysis.srv"
   "srv/EAPCommandState.srv"
   "srv/SRTcpCommunication.srv"
@@ -31,6 +32,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/EtherGateSrv.srv"
   "srv/SRRobotIKSrv.srv"
   "srv/SRRobotInfoSrv.srv"
+  "srv/GCPNSrv.srv"
+  "srv/IntensionControlSrv.srv"
   "action/SRRobotIKMove.action"
   DEPENDENCIES std_msgs geometry_msgs
 )

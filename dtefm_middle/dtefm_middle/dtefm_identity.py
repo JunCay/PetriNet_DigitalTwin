@@ -3,8 +3,8 @@ import sys
 import os
 import ast
 from rclpy.node import Node
-from dtefm_interfaces.msg import SRStateRobot, PlaceMsg, TransitionMsg, ArcMsg, PetriNet
-from dtefm_interfaces.srv import SRTcpCommunication, SRState, PNCommand
+from dtefm_interfaces.msg import SRStateRobot, PlaceMsg, TransitionMsg, ArcMsg, PetriNet, GCPNStateMsg
+from dtefm_interfaces.srv import SRTcpCommunication, SRState, PNCommand, GCPNSrv, IntensionControlSrv
 from ament_index_python.packages import get_package_share_directory
 # from src.dtefm_middle.resource.pntk.example_nets import PlainNet
 # from src.dtefm_middle.resource.sr_state.sr_state import SR_State
@@ -29,19 +29,46 @@ class Identity(Node):
         self.sr_state_s = SR_State()
         self.sr_state_robot_subscriber_ = self.create_subscription(SRStateRobot, '/sr/robot/state/physical', self.sr_state_robot_physical_callback, 10)
         self.sr_state_server_ = self.create_service(SRState, '/identity/sr/state_srv', self.sr_state_srv_callback)
-        
+        self.intension_generator_publisher_ = self.create_publisher(GCPNStateMsg, '/identity/agent/state', 10)
+        self.intension_generator_clinent_ = self.create_client(GCPNSrv, '/identity/agent/intension_srv')
+        self.intension_control_server_ = self.create_service(IntensionControlSrv, '/identity/agent/intension_control_srv', self.intensiton_control_callback)
         self.identity_pn = PlainNet('identity_pn')
         self.pn_server_ = self.create_service(PNCommand, '/identity/pn_srv', self.pn_server_callback)
         self.pn_updator_ = self.create_publisher(PetriNet, 'identity/pn/update', 10)
         # self.pn_decision_client = self.create_client()
         self.dt = 0.5
         self.pn_timer = self.create_timer(self.dt, self.pn_timer_callback)
+        self.pn_create_command_log = []
+        self.control_state = 0
         
     def pn_timer_callback(self):
         changed = self.identity_pn.tick(self.dt)
         if len(changed) > 0:
             self.get_logger().info(f"transition {changed} finished")
             self.pn_generate_response()
+        
+        if self.control_state == 1:
+            state_msg = GCPNStateMsg()
+            state_msg.dim_p = self.identity_pn.get_state_space()[0][0]
+            state_msg.dim_t = self.identity_pn.get_state_space()[1][0]
+            state_msg.lp = self.identity_pn.get_state_space()[0][1]
+            state_msg.lt = self.identity_pn.get_state_space()[1][1]
+            p_state = self.identity_pn.get_state()[0]
+            t_state = self.identity_pn.get_state()[1]
+            state_msg.p_state = [v for row in p_state for v in row]
+            state_msg.t_state = [v for row in t_state for v in row]
+            
+            state_msg.timestamp = self.get_clock().now().to_msg()
+            
+            # self.intension_generator_publisher_.publish(state_msg)
+            request = GCPNSrv.Request()
+            request.state = state_msg
+            self.intension_generator_clinent_.call_async(request)
+    
+    def intensiton_control_callback(self, request, response):
+        self.control_state = request.control_state
+        response.current_control_state = self.control_state
+        return response
         
     def pn_server_callback(self, request, response):
         command = request.command
