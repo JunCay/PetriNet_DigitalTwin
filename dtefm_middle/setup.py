@@ -14,6 +14,8 @@ setup(
         (os.path.join('share', package_name, 'resource', 'pntk'), glob('resource/pntk/*.py')),
         (os.path.join('share', package_name, 'resource', 'rltk'), glob('resource/rltk/*.py')),
         (os.path.join('share', package_name, 'resource', 'srtk'), glob('resource/srtk/*.py')),
+        (os.path.join('share', package_name, 'resource', 'trained_memory'), glob('resource/trained_memory/*.pth')),
+        
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -26,6 +28,8 @@ setup(
         'console_scripts': [
             'identity = dtefm_middle.dtefm_identity:main',
             'intension_generator = dtefm_middle.dtefm_intension_generator:main',
+            'intension_gate = dtefm_middle.dtefm_intension_gate:main',
+            'identity_gate = dtefm_middle.dtefm_identity_gate:main',
             'sr_robot_ik_server = dtefm_middle.dtefm_sr_IK_server:main',
         ],
     },

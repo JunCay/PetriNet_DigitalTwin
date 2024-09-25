@@ -6,8 +6,8 @@ import time
 import torch
 import numpy as np
 from rclpy.node import Node
-from dtefm_interfaces.msg import SRStateRobot, PlaceMsg, TransitionMsg, ArcMsg, PetriNet
-from dtefm_interfaces.srv import SRTcpCommunication, SRState, PNCommand, IntensionControlSrv, GCPNSrv
+from dtefm_interfaces.msg import SRStateRobot, PlaceMsg, TransitionMsg, ArcMsg, PetriNet, GCPNStateMsg, GCPNActionMsg
+from dtefm_interfaces.srv import SRTcpCommunication, SRState, PNCommand, IntensionExpressControlSrv, GCPNSrv
 from ament_index_python.packages import get_package_share_directory
 
 package_share_directory = get_package_share_directory('dtefm_middle')
@@ -26,10 +26,10 @@ class IntensionGenerator(Node):
     def __init__(self, name):
         super().__init__(name)
         self.get_logger().info(f"Intension Core node {name} initialized..")
-        self.pn_client_ = self.create_client(PNCommand, '/identity/pn_srv')
-        self.intension_control_client_ = self.create_client(IntensionControlSrv, '/identity/agent/intension_control_srv')
-
-        self.intension_generate_server_ = self.create_service(GCPNSrv, '/identity/agent/intension_srv', self.intension_generate_callback)
+        self.pn_client_ = self.create_client(PNCommand, '/identity/pn_srv/core')     # client to indentity for getting adj matrix
+        self.intension_control_client_ = self.create_client(IntensionExpressControlSrv, '/identity/agent/intension_control_srv')       # client to indentity for setting identity intension state
+        self.intension_generate_server_ = self.create_service(GCPNSrv, '/identity/agent/intension_srv', self.intension_generate_callback)       # subscribe observation from identity, deal with it
+        self.intension_publisher_ = self.create_publisher(GCPNActionMsg, '/identity/agent/action', 10)
         self.actor_lr = 5e-5
         self.critic_lr = 1e-3
         self.num_episodes = 500
@@ -37,9 +37,10 @@ class IntensionGenerator(Node):
         self.gamma = 0.99
         self.lmbda = 0.95
         self.epochs = 20
-        self.epsilon = 0.2      # greedy
+        self.epsilon = 0.0      # greedy
         self.eps = 0.1
-        self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        self.device = torch.device('cpu')   # torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        print(f"intension generator on device: {self.device}")
         self.pn_adj = None
         self.intension_agent = None
         self.update_pn()
@@ -69,7 +70,7 @@ class IntensionGenerator(Node):
         self.get_logger().info(f"pn_adj updated {self.pn_adj}")
     
     def intension_control(self, target_state):
-        request = IntensionControlSrv.Request()
+        request = IntensionExpressControlSrv.Request()
         request.state = target_state
         self.intension_control_client_.call_async(request)
     
@@ -84,8 +85,9 @@ class IntensionGenerator(Node):
         self.action_dim = self.pn_adj.shape[1]
         self.intension_agent = Agent_PPO(self.lp, self.lt, self.action_dim, self.pn_adj, actor_lr, critic_lr, lmbda, epochs, epsilon, eps, gamma, device)
         package_share_directory = get_package_share_directory('dtefm_middle')
-        actor_state_dict_path = os.path.join(package_share_directory, 'trained_memory/PPO_actor_lock.pth')
-        critic_state_dict_path = os.path.join(package_share_directory, 'trained_memory/PPO_critic_lock.pth')
+        memory_file_path = os.path.join(package_share_directory, 'resource/trained_memory')
+        actor_state_dict_path = os.path.join(memory_file_path, 'PPO_actor_lock.pth')
+        critic_state_dict_path = os.path.join(memory_file_path, 'PPO_critic_lock.pth')
         self.load_trained_model(actor_state_dict_path, critic_state_dict_path)
         
     
@@ -107,16 +109,23 @@ class IntensionGenerator(Node):
         
         if self.intension_agent == None:
             self.agent_ppo_initialize(self.actor_lr, self.critic_lr, self.lmbda, self.epochs, self.epsilon, self.eps, self.gamma, self.device)
-        action = self.intension_agent.actor(p_state, t_state)
+        state = [p_state, t_state]
+        action = self.intension_agent.take_action(state)
         
-        response.action_index = action
+        response.action_index = int(action)
+        self.get_logger().info(f"current intension: {response.action_index}")
+        
+        action_msg = GCPNActionMsg()
+        action_msg.timestamp = self.get_clock().now().to_msg()
+        action_msg.action_index = int(action)
+        self.intension_publisher_.publish(action_msg)
         return response
     
 
 def main(args=None):
     rclpy.init(args=args)
     
-    node = IntensionGenerator('identity')
+    node = IntensionGenerator('Intension_Generator')
     rclpy.spin(node)
     
     node.destroy_node()

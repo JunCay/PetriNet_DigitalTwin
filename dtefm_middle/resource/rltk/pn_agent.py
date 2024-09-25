@@ -101,11 +101,10 @@ class Agent_PPO():
             
             state_p = torch.tensor([state_p], dtype=torch.float).to(self.device)
             state_t = torch.tensor([state_t], dtype=torch.float).to(self.device)
-
-            probs = self.actor(state_p, state_t)
-            noise = torch.ones_like(probs) - torch.randn_like(probs) * 0.1
-            probs *= noise
             
+            probs = self.actor(state_p, state_t)
+            # noise = torch.ones_like(probs) - torch.randn_like(probs) * 0.1
+            # probs *= noise
             mask = torch.zeros_like(probs)
             mask[-1, choix] = 1
             probs = probs * mask

@@ -4,7 +4,7 @@ import os
 import ast
 from rclpy.node import Node
 from dtefm_interfaces.msg import SRStateRobot, PlaceMsg, TransitionMsg, ArcMsg, PetriNet, GCPNStateMsg
-from dtefm_interfaces.srv import SRTcpCommunication, SRState, PNCommand, GCPNSrv, IntensionControlSrv
+from dtefm_interfaces.srv import SRTcpCommunication, SRState, PNCommand, GCPNSrv, IntensionGateControlSrv, IntensionExpressControlSrv
 from ament_index_python.packages import get_package_share_directory
 # from src.dtefm_middle.resource.pntk.example_nets import PlainNet
 # from src.dtefm_middle.resource.sr_state.sr_state import SR_State
@@ -31,9 +31,9 @@ class Identity(Node):
         self.sr_state_server_ = self.create_service(SRState, '/identity/sr/state_srv', self.sr_state_srv_callback)
         self.intension_generator_publisher_ = self.create_publisher(GCPNStateMsg, '/identity/agent/state', 10)
         self.intension_generator_clinent_ = self.create_client(GCPNSrv, '/identity/agent/intension_srv')
-        self.intension_control_server_ = self.create_service(IntensionControlSrv, '/identity/agent/intension_control_srv', self.intensiton_control_callback)
+        self.intension_control_server_ = self.create_service(IntensionExpressControlSrv, '/identity/agent/intension_control_srv', self.intensiton_control_callback)
         self.identity_pn = PlainNet('identity_pn')
-        self.pn_server_ = self.create_service(PNCommand, '/identity/pn_srv', self.pn_server_callback)
+        self.pn_server_ = self.create_service(PNCommand, '/identity/pn_srv/core', self.pn_server_callback)
         self.pn_updator_ = self.create_publisher(PetriNet, 'identity/pn/update', 10)
         # self.pn_decision_client = self.create_client()
         self.dt = 0.5
@@ -64,9 +64,11 @@ class Identity(Node):
             request = GCPNSrv.Request()
             request.state = state_msg
             self.intension_generator_clinent_.call_async(request)
+            # self.get_logger().info(f"state passed")
     
     def intensiton_control_callback(self, request, response):
         self.control_state = request.control_state
+        response = IntensionExpressControlSrv.Response()
         response.current_control_state = self.control_state
         return response
         
@@ -142,6 +144,12 @@ class Identity(Node):
             pass
         elif command == 'MDLN':
             self.identity_pn = PlainNet('identity_pn')
+            
+        elif command == 'MAST':
+            target_place = args[0]
+            target_marking = ast.literal_eval(args[1])
+            self.identity_pn.name_node[target_place].set_target_marking(target_marking)
+            
         elif command == 'MFRT':
             try:
                 target_trans = args[0]
@@ -150,7 +158,7 @@ class Identity(Node):
                 else:
                     if self.identity_pn.name_node[target_trans].status == 'ready':
                         self.identity_pn.on_fire_transition(self.identity_pn.name_node[target_trans])
-                        self.get_logger().info(f'{target_trans} started, status: {self.identity_pn.name_node[target_trans].status} rest time: {self.identity_pn.name_node[target_trans].time}')
+                        self.get_logger().info(f'{target_trans} started, rest time: {self.identity_pn.name_node[target_trans].time}')
                     else:
                         self.get_logger().warn(f'Firing unready Transition {target_trans}')
             except:

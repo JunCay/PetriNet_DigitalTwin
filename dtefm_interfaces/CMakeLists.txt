@@ -24,6 +24,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/TransitionMsg.msg"
   "msg/ArcMsg.msg"
   "msg/GCPNStateMsg.msg"
+  "msg/GCPNActionMsg.msg"
   "srv/EAPCommandAnalysis.srv"
   "srv/EAPCommandState.srv"
   "srv/SRTcpCommunication.srv"
@@ -33,7 +34,9 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/SRRobotIKSrv.srv"
   "srv/SRRobotInfoSrv.srv"
   "srv/GCPNSrv.srv"
-  "srv/IntensionControlSrv.srv"
+  "srv/IntensionExpressControlSrv.srv"
+  "srv/IntensionGateControlSrv.srv"
+  "srv/IdentityGateControlSrv.srv"
   "action/SRRobotIKMove.action"
   DEPENDENCIES std_msgs geometry_msgs
 )
