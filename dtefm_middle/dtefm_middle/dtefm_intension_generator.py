@@ -26,7 +26,7 @@ class IntensionGenerator(Node):
     def __init__(self, name):
         super().__init__(name)
         self.get_logger().info(f"Intension Core node {name} initialized..")
-        self.pn_client_ = self.create_client(PNCommand, '/identity/pn_srv/core')     # client to indentity for getting adj matrix
+        self.pn_client_ = self.create_client(PNCommand, '/identity/pn_srv/inner')     # client to indentity for getting adj matrix
         self.intension_control_client_ = self.create_client(IntensionExpressControlSrv, '/identity/agent/intension_control_srv')       # client to indentity for setting identity intension state
         self.intension_generate_server_ = self.create_service(GCPNSrv, '/identity/agent/intension_srv', self.intension_generate_callback)       # subscribe observation from identity, deal with it
         self.intension_publisher_ = self.create_publisher(GCPNActionMsg, '/identity/agent/action', 10)
