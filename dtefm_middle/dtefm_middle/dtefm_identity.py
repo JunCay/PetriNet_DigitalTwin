@@ -29,9 +29,11 @@ class Identity(Node):
         self.sr_state_s = SR_State()
         self.sr_state_robot_subscriber_ = self.create_subscription(SRStateRobot, '/sr/robot/state/physical', self.sr_state_robot_physical_callback, 10)
         self.sr_state_server_ = self.create_service(SRState, '/identity/sr/state_srv', self.sr_state_srv_callback)
+        
         self.intension_generator_publisher_ = self.create_publisher(GCPNStateMsg, '/identity/agent/state', 10)
         self.intension_generator_clinent_ = self.create_client(GCPNSrv, '/identity/agent/intension_srv')
         self.intension_control_server_ = self.create_service(IntensionExpressControlSrv, '/identity/agent/intension_control_srv', self.intensiton_control_callback)
+        
         self.identity_pn = PlainNet('identity_pn')
         self.pn_server_ = self.create_service(PNCommand, '/identity/pn_srv/core', self.pn_server_callback)
         self.pn_updator_ = self.create_publisher(PetriNet, 'identity/pn/update', 10)
@@ -39,15 +41,16 @@ class Identity(Node):
         self.dt = 0.5
         self.pn_timer = self.create_timer(self.dt, self.pn_timer_callback)
         self.pn_create_command_log = []
-        self.control_state = 0
+        self.control_state = {'express': 0, 'ego_env': 1}
         
     def pn_timer_callback(self):
-        changed = self.identity_pn.tick(self.dt)
-        if len(changed) > 0:
-            self.get_logger().info(f"transition {changed} finished")
-            self.pn_generate_response()
+        if self.control_state['ego_env'] == 1:
+            changed = self.identity_pn.tick(self.dt)
+            if len(changed) > 0:
+                self.get_logger().info(f"transition {changed} finished")
+                self.pn_generate_response()
         
-        if self.control_state == 1:
+        if self.control_state['express'] == 1:
             state_msg = GCPNStateMsg()
             state_msg.dim_p = self.identity_pn.get_state_space()[0][0]
             state_msg.dim_t = self.identity_pn.get_state_space()[1][0]
@@ -67,9 +70,11 @@ class Identity(Node):
             # self.get_logger().info(f"state passed")
     
     def intensiton_control_callback(self, request, response):
-        self.control_state = request.control_state
+        self.control_state['express'] = request.express
+        self.control_state['ego_env'] = request.ego_env
         response = IntensionExpressControlSrv.Response()
-        response.current_control_state = self.control_state
+        response.express = self.control_state['express']
+        response.ego_env = self.control_state['ego_env']
         return response
         
     def pn_server_callback(self, request, response):
@@ -200,7 +205,8 @@ class Identity(Node):
             self.get_logger().error(f"Unknown Command: {command}")
             
         self.identity_pn.update_ready_transition()
-        response = self.pn_generate_response() 
+        response = self.pn_generate_response()
+        
         return response
     
     def pn_generate_response(self):     # include send state to topic /identity/pn/update

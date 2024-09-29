@@ -2,6 +2,7 @@ import rclpy
 import sys
 import os
 import ast
+import csv
 import time
 import torch
 import numpy as np
@@ -10,17 +11,29 @@ from dtefm_interfaces.msg import SRStateRobot, PlaceMsg, TransitionMsg, ArcMsg, 
 from dtefm_interfaces.srv import SRTcpCommunication, SRState, PNCommand, IntensionGateControlSrv, GCPNSrv, IdentityGateControlSrv
 from ament_index_python.packages import get_package_share_directory
 
+package_share_directory = get_package_share_directory('dtefm_middle')
+inital_file_path = os.path.join(package_share_directory, 'resource/action_command')
+
 class IntensionGate(Node):
     def __init__(self, name):
         super().__init__(name)
         self.get_logger().info(f"Intension Gate node {name} initialized..")
-        self.pn_client_i = self.create_client(PNCommand, '/identity/pn_srv/core')
+        self.pn_core_client_ = self.create_client(PNCommand, '/identity/pn_srv/core')
+        self.pn_client_ = self.create_client(PNCommand, '/identity/pn_srv/inner')
         self.intension_subscriber_ = self.create_subscription(GCPNActionMsg, '/identity/agent/action', self.intension_distribute_callback, 10)
         
         self.identity_gate_control_server_ = self.create_service(IntensionGateControlSrv, '/identity/gate', self.intension_gate_control_callback)
         self.intension_gate_state = {'mute': 0, 'remain': 1, 'execute':0}
         self.transition_list = None
+        self.action2command = dict()
         self.update_pn()
+        
+        self.a2c_initial_file = os.path.join(inital_file_path, f'neural_petri_net_lock_action_command.csv')
+    
+    def get_action_command_from_file(self, a2c_initial_file):
+        with open(a2c_initial_file, 'r', encoding='utf-8-sig') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
     
     def intension_gate_control_callback(self, request, response):
         self.intension_gate_state['mute'] = request.mute_state
@@ -41,8 +54,8 @@ class IntensionGate(Node):
      
     def update_pn(self):
         request = PNCommand.Request()
-        request.command = 'RPRN'
-        self.pn_client_i.call_async(request).add_done_callback(self.update_pn_)
+        request.command = 'RNET'
+        self.pn_core_client_.call_async(request).add_done_callback(self.update_pn_)
         
     def update_pn_(self, result):
         response = result.result()
@@ -87,7 +100,7 @@ class IntensionGate(Node):
             pnc = PNCommand.Request()
             pnc.command = 'MFRT'
             pnc.args = [action_name]
-            self.pn_client_i.call_async(pnc)
+            self.pn_client_.call_async(pnc)
             self.get_logger().info(f"action {action_index} sent to pn core")
             
             return 

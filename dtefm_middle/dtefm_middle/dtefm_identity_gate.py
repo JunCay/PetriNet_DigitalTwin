@@ -23,6 +23,8 @@ class IdentityGate(Node):
         self.identity_gate_control_server_ = self.create_service(IdentityGateControlSrv, '/identity/gate', self.identity_gate_control_callback)
         self.identity_gate_state = 0
 
+        # self.test_call()
+
     def identity_gate_control_callback(self, request, response):
         self.identity_gate_state = request.control_state
         response.current_control_state = self.identity_gate_state
@@ -34,8 +36,10 @@ class IdentityGate(Node):
             response = PNCommand.Response()
             response.gate_status = 'blocked'
             return response
-        
-        response = self.pn_client_.call(request)
+        self.get_logger().info(f"inner PNCommad distributed")
+        self.pn_client_.call_async(request)
+        response = PNCommand.Response()
+        response.gate_status = 'distributed'
         return response
     
     def pn_distribute_server_callback_s(self, request, response):
@@ -44,8 +48,9 @@ class IdentityGate(Node):
             response = PNCommand.Response()
             response.gate_status = 'blocked'
             return response
-        
-        response = self.pn_client_.call(request)
+        response = self.pn_client_.call_async(request)
+        response = PNCommand.Response()
+        response.gate_status = 'distributed'
         return response
     
     def pn_distribute_server_callback_p(self, request, response):
@@ -56,8 +61,21 @@ class IdentityGate(Node):
             response.gate_status = 'blocked'
             return response
         
-        response = self.pn_client_.call(request)
+        response = self.pn_client_.call_async(request)
+        response = PNCommand.Response()
+        response.gate_status = 'distributed'
         return response
+    
+    def test_call(self):
+        request = PNCommand.Request()
+        request.command = 'RNET'
+        self.get_logger().info(f"start test call")
+        future = self.pn_client_.call_async(request)
+        rclpy.spin_until_future_complete(self, future)
+        response = future.result()
+        self.get_logger().info(f"inner PNCommad get response {response}")
+        return response
+        
         
             
 def main(args=None):

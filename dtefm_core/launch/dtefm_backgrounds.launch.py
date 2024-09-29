@@ -29,12 +29,12 @@ def generate_launch_description():
     # )
     # launch_list.append(ether_gate_p)
     
-    identity_gate = Node(
+    identity_gate_node = Node(
         package="dtefm_middle",
         executable="identity_gate",
-        output='log',
+        output="log",
     )
-    launch_list.append(identity_gate)
+    launch_list.append(identity_gate_node)
     
     # ros2 run ros_tcp_endpoint default_server_endpoint --ros-args -p ROS_IP:=0.0.0.0
     ether_gate_s = Node(
