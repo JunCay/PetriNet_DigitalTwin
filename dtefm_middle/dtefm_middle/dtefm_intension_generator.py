@@ -15,7 +15,7 @@ library_path = os.path.join(package_share_directory, 'resource/pntk')
 sys.path.append(library_path)
 from elements import Place, Transition, Arc
 from petri_net import ColoredPetriNet
-from example_nets import PlainNet
+from example_net import PlainNet
 
 package_share_directory = get_package_share_directory('dtefm_middle')
 library_path = os.path.join(package_share_directory, 'resource/rltk')
@@ -31,7 +31,7 @@ class IntensionGenerator(Node):
         self.intension_control_client_ = self.create_client(IntensionExpressControlSrv, '/identity/agent/intension_control_srv')       # client to indentity for setting identity intension state
         self.intension_generate_server_ = self.create_service(GCPNSrv, '/identity/agent/intension_srv', self.intension_generate_callback)       # subscribe observation from identity, deal with it
         self.intension_publisher_ = self.create_publisher(GCPNActionMsg, '/identity/agent/action', 10)
-        self.intension2command = dict()
+        
         self.actor_lr = 5e-5
         self.critic_lr = 1e-3
         self.num_episodes = 500

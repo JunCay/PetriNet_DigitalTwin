@@ -192,13 +192,13 @@ class ColoredPetriNet():
                     return True
             return False
         elif arc.direction == 'TtoP':
-            if arc.node_out.branch == 'resource':
+            if arc.node_out.place_type == 'resource':
                 if arc.node_out.tokens > 0:
                     return False
                 return True
             else:
                 return True
-        
+    
     def fire_transition(self, transition:Transition):
         """
         Fire the input transition. Then update the ready transition list.
@@ -246,7 +246,7 @@ class ColoredPetriNet():
             return False
         if not self.transition_ready_check(transition):
             if self.debug:
-                print(f"Transition not found in current petri net")
+                print(f"Transition not ready")
             return False
         if transition.work_status == 'firing':
             if self.debug:
@@ -259,6 +259,71 @@ class ColoredPetriNet():
         # transition.work_status = 'firing'
         # transition.time = transition.consumption
         transition.set_on_fire()
+        return True
+    
+    def on_fire_transition_restrict(self, transition:Transition):
+        """
+        Set the transition to firing status. Except influnce visible.
+
+        Args:
+            transition (Transition): The transition to be started.
+
+        Returns:
+            Boolean: if the transition is successfully started.
+        """
+        # print(f"on firing transition: {transition.name}")
+        if transition not in self.transitions.values():
+            if self.debug:
+                print(f"Transition not found in current petri net")
+            return False
+        if not self.transition_ready_check(transition):
+            if self.debug:
+                print(f"Transition not ready")
+            return False
+        if transition.work_status == 'firing':
+            if self.debug:
+                print(f"Transition is already firing")
+            return False
+        
+        for arc in self.transitions[transition.id].in_arcs.values():
+            if arc.node_in.visibility == 'visible':
+                continue
+            for k in arc.node_in.marking.keys():
+                arc.node_in.marking[k] -= arc.annotation[k]
+        transition.set_on_fire()
+        return True
+    
+    def off_fire_transition_restrict(self, transition:Transition):
+        """
+        Set the transition to firing status. Except influnce visible.
+
+        Args:
+            transition (Transition): The transition to be started.
+
+        Returns:
+            Boolean: if the transition is successfully started.
+        """
+        # print(f"on firing transition: {transition.name}")
+        if transition not in self.transitions.values():
+            if self.debug:
+                print(f"Transition not found in current petri net")
+            return False
+        if not self.transition_ready_check(transition):
+            if self.debug:
+                print(f"Transition not ready")
+            return False
+        if transition.work_status == 'firing':
+            if self.debug:
+                print(f"Transition is already firing")
+            return False
+        
+        for arc in self.transitions[transition.id].in_arcs.values():
+            if arc.node_out.visibility == 'visible':
+                continue
+            for k in arc.node_out.marking.keys():
+                arc.node_out.marking[k] += arc.annotation[k]
+        transition.set_on_fire()
+        
         return True
     
     def chech_alive(self):
@@ -399,7 +464,7 @@ class ColoredPetriNet():
         for i, place in enumerate(self.places.values()):
             place_state[i, 0] = place.tokens
             place_state[i, 1] = place.target_tokens
-            if place.branch == 'resource':
+            if place.place_type == 'resource':
                 place_state[i, 2] = 1.0
         return place_state
     

@@ -12,12 +12,12 @@ def generate_launch_description():
     )
     launch_list.append(sr_robot_ik_server)
     
-    identity_node = Node(
-        package="dtefm_middle",
-        executable="identity",
-        output="screen",
-    )
-    launch_list.append(identity_node)
+    # identity_node = Node(
+    #     package="dtefm_middle",
+    #     executable="identity",
+    #     output="screen",
+    # )
+    # launch_list.append(identity_node)
     
     identity_initializer = TimerAction(
         period=0.5,

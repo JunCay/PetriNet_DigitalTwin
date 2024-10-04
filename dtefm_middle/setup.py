@@ -14,6 +14,7 @@ setup(
         (os.path.join('share', package_name, 'resource', 'pntk'), glob('resource/pntk/*.py')),
         (os.path.join('share', package_name, 'resource', 'rltk'), glob('resource/rltk/*.py')),
         (os.path.join('share', package_name, 'resource', 'srtk'), glob('resource/srtk/*.py')),
+        (os.path.join('share', package_name, 'resource', 'action_command'), glob('resource/action_command/*.csv')),
         (os.path.join('share', package_name, 'resource', 'trained_memory'), glob('resource/trained_memory/*.pth')),
         
     ],

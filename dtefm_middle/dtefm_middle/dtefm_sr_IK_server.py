@@ -345,7 +345,7 @@ class RobotIKServer(Node):
         self.ik_action_server_ = ActionServer(self, SRRobotIKMove, '/sr/robot/ik_move', self.sr_ik_move_callback)
         
         time.sleep(0.5)
-        self.robot_initialize(sync=True)
+        self.robot_initialize(sync=False)    # Please Check Here
         
         self.current_joint_state = None
         self.target_joint_state = None          # SRStateRobot()
@@ -394,8 +394,8 @@ class RobotIKServer(Node):
         self.sr_robot.set_goal(request.target_pose, request.target_claw)
         self.sr_robot.set_current_state(request.current_state)
         self.sr_robot.cal_sr_ik()
-        self.get_logger().info(self.sr_robot.print_target_pose())
-        self.get_logger().info(self.sr_robot.print_target_state())
+        # self.get_logger().info(self.sr_robot.print_target_pose())
+        # self.get_logger().info(self.sr_robot.print_target_state())
         self.sr_robot.start_move_ik()
         self.last_time = self.get_clock().now()
         
@@ -408,14 +408,14 @@ class RobotIKServer(Node):
                 sync_msg = SRStateRobot()
                 sync_msg = self.sr_robot.get_states()
                 self.ik_sync_publisher_.publish(sync_msg)
-                self.get_logger().info(self.sr_robot.print_state())
+                # self.get_logger().info(self.sr_robot.print_state())
                 self.last_time = current_time
                 
             time.sleep(self.dt)
         self.sr_robot.set_current_state(self.sr_robot.target_state)
         
         response.target_state = self.sr_robot.get_states()
-        self.get_logger().info(self.sr_robot.print_state())
+        # self.get_logger().info(self.sr_robot.print_state())
         self.get_logger().info(f"IK finished")
         
         return response

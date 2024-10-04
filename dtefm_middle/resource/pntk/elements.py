@@ -10,7 +10,7 @@ class Layout():
         
 
 class Place():
-    def __init__(self, name, initial_marking, processing_time=0.0, branch='activity'):
+    def __init__(self, name, initial_marking, processing_time=0.0, visibility='unvisible', place_type='activity'):
         self.id = uuid.uuid4()
         self.name = name
         self.ins = dict()
@@ -22,7 +22,8 @@ class Place():
         self.target_marking = dict()
         self.processing_time = processing_time
         self.time = 0.0
-        self.branch = branch
+        self.visibility = visibility
+        self.place_type = place_type
         self.set_initial_marking(initial_marking)
         self.set_target_marking(initial_marking)
 

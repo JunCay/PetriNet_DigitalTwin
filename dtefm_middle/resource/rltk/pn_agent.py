@@ -21,7 +21,7 @@ library_path = os.path.join(package_share_directory, 'resource/pntk')
 sys.path.append(library_path)
 from elements import *
 from petri_net import *
-from example_nets import *
+from example_net import *
 
 class GPNPolicyNet(torch.nn.Module):
     def __init__(self, lp0, lt0, adj_matrix, device):
@@ -118,10 +118,12 @@ class Agent_PPO():
             try:
                 action_list = torch.distributions.Categorical(probs)
             except:
-                print(self.actor.state_dict())
-                print(self.critic.state_dict())
-                print("probs: ", probs)
-                print("choix: ", choix)
+                # print(self.actor.state_dict())
+                # print(self.critic.state_dict())
+                # print("probs: ", probs)
+                # print("choix: ", choix)
+                print(state_p)
+                pass
             
             action = action_list.sample()
             # print(action)

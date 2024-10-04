@@ -31,7 +31,6 @@ class IdentityGate(Node):
         return response
 
     def pn_distribute_server_callback_i(self, request, response):
-        self.get_logger().info(f"receive inner PNCommad")
         if not self.identity_gate_state == 0:   # only allow inner intension
             response = PNCommand.Response()
             response.gate_status = 'blocked'
@@ -43,24 +42,23 @@ class IdentityGate(Node):
         return response
     
     def pn_distribute_server_callback_s(self, request, response):
-        self.get_logger().info(f"receive simute PNCommad")
         if not self.identity_gate_state == 1:   # only allow simulate pn update
             response = PNCommand.Response()
             response.gate_status = 'blocked'
             return response
+        self.get_logger().info(f"simulate PNCommad {request.command}, {request.args} distributed")
         response = self.pn_client_.call_async(request)
         response = PNCommand.Response()
         response.gate_status = 'distributed'
         return response
     
     def pn_distribute_server_callback_p(self, request, response):
-        self.get_logger().info(f"receive physical PNCommad")
         
         if not self.identity_gate_state == 2:   # only allow physical pn update
             response = PNCommand.Response()
             response.gate_status = 'blocked'
             return response
-        
+        self.get_logger().info(f"receive physical PNCommad")
         response = self.pn_client_.call_async(request)
         response = PNCommand.Response()
         response.gate_status = 'distributed'

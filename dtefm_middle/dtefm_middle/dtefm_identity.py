@@ -14,7 +14,7 @@ library_path = os.path.join(package_share_directory, 'resource/pntk')
 sys.path.append(library_path)
 from elements import Place, Transition, Arc
 from petri_net import ColoredPetriNet
-from example_nets import PlainNet
+from example_net import PlainNet
 
 library_path = os.path.join(package_share_directory, 'resource/srtk')
 sys.path.append(library_path)
@@ -84,15 +84,25 @@ class Identity(Node):
         self.get_logger().info(f'received args: {args}')
         
         if command == 'MADP':
+            args_ = []
+            for arg in args:
+                try:
+                    eval_arg = ast.literal_eval(arg)
+                except:
+                    eval_arg = arg
+                args_.append(eval_arg)
+                
             try:
-                new_name = args[0]
-                if new_name == None or new_name == '':
-                    raise TypeError
-                if new_name in self.identity_pn.name_node.keys():
-                    self.get_logger().error(f'Duplicated place name: {new_name}')
-                    raise
-                new_mark = ast.literal_eval(args[1])
-                new_place = Place(new_name, new_mark)
+                # new_name = args[0]
+                # if new_name == None or new_name == '':
+                #     raise TypeError
+                # if new_name in self.identity_pn.name_node.keys():
+                #     self.get_logger().error(f'Duplicated place name: {new_name}')
+                #     raise
+                # new_mark = ast.literal_eval(args[1])
+                
+                # new_place = Place(new_name, new_mark)
+                new_place = Place(*args_)
                 self.identity_pn.add_node(new_place)
             except TypeError:
                 self.get_logger().error(f'error args type for command {command}')
@@ -168,6 +178,29 @@ class Identity(Node):
                         self.get_logger().warn(f'Firing unready Transition {target_trans}')
             except:
                 self.get_logger().error(f'Error args for command {command}: {args}')
+        elif command == 'SFRT':
+            try:
+                target_trans = args[0]
+                if target_trans not in self.identity_pn.name_node.keys():
+                    self.get_logger().error(f'Unknown Transition for command {command}')
+                else:
+                    if self.identity_pn.name_node[target_trans].status == 'ready':
+                        self.identity_pn.on_fire_transition_restrict(self.identity_pn.name_node[target_trans])
+                        self.get_logger().info(f'{target_trans} set started')
+                    else:
+                        self.get_logger().warn(f'Firing unready Transition {target_trans}')
+            except:
+                self.get_logger().error(f'Error args for command {command}: {args}')
+        elif command == 'SOFT':
+            try:
+                target_trans = args[0]
+                if target_trans not in self.identity_pn.name_node.keys():
+                    self.get_logger().error(f'Unknown Transition for command {command}')
+                else:
+                    self.identity_pn.off_fire_transition_restrict(self.identity_pn.name_node[target_trans]) 
+            except:
+                self.get_logger().error(f'Error args for command {command}: {args}')
+                
         elif command == 'SRSN':
             self.identity_pn.reset_net()
         elif command == 'SPMK':
