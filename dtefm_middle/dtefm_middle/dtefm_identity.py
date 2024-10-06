@@ -80,8 +80,7 @@ class Identity(Node):
     def pn_server_callback(self, request, response):
         command = request.command
         args = request.args
-        self.get_logger().info(f'received command: {command}')
-        self.get_logger().info(f'received args: {args}')
+        self.get_logger().info(f'received command: {command} : {args}')
         
         if command == 'MADP':
             args_ = []
@@ -197,7 +196,7 @@ class Identity(Node):
                 if target_trans not in self.identity_pn.name_node.keys():
                     self.get_logger().error(f'Unknown Transition for command {command}')
                 else:
-                    self.identity_pn.off_fire_transition_restrict(self.identity_pn.name_node[target_trans]) 
+                    self.identity_pn.off_fire_transition_restrict(self.identity_pn.name_node[target_trans], debug=True) 
             except:
                 self.get_logger().error(f'Error args for command {command}: {args}')
                 

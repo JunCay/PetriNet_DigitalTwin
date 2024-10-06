@@ -1,3 +1,4 @@
 string data
+string transition_name
 ---
 string[] responses

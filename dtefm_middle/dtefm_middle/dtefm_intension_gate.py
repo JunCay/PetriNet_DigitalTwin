@@ -24,6 +24,8 @@ class IntensionGate(Node):
         self.pn_client_ = self.create_client(PNCommand, '/identity/pn_srv/inner')
         self.simulate_command_client_ = self.create_client(SRTcpCommunication, '/sr/command/simulate')
         self.intension_subscriber_ = self.create_subscription(GCPNActionMsg, '/identity/agent/action', self.intension_distribute_callback, 10)
+        self.command_monitor_server_ = self.create_service(SRTcpCommunication, '/sr/command/simulate/callback', self.simulate_cmd_callback)
+        
         
         self.identity_gate_control_server_ = self.create_service(IntensionGateControlSrv, '/identity/gate/control', self.intension_gate_control_callback)
         self.intension_gate_state = {'mute': 0, 'remain': 1, 'execute':0}
@@ -105,9 +107,9 @@ class IntensionGate(Node):
             self.get_logger().info(f"Command Ocupied-Idling")
             return
         
-        if self.sending_request:
-            self.get_logger().info(f"Command is sending. Blocked")
-            return 
+        # if self.sending_request:
+        #     self.get_logger().info(f"Command is sending. Blocked")
+        #     return 
         
         self.last_action_index = action_index
         # Direct return if mute
@@ -133,6 +135,7 @@ class IntensionGate(Node):
                 command = f"{command_with_sequence}{checksum}\r"
                 request = SRTcpCommunication.Request()
                 request.data = command
+                request.transition_name = action_name
                 self.sending_request = 1
                 
                 pnc = PNCommand.Request()
@@ -140,7 +143,7 @@ class IntensionGate(Node):
                 pnc.args = [action_name]
                 self.pn_core_client_.call_async(pnc)
                 
-                self.simulate_command_client_.call_async(request).add_done_callback(self.clear_sending_request, action_name=action_name)
+                self.simulate_command_client_.call_async(request)
                 self.sequence_number = (self.sequence_number + 1)%100
                 # self.get_logger().info(f"action {action_index} sent to simulate executor")
                 self.get_logger().info(f"s: {command}")
@@ -148,13 +151,15 @@ class IntensionGate(Node):
             elif self.intension_gate_state['execute'] == 1:
                 self.get_logger().info(f"action {action_index} sent to physical executor")
                 
-    def clear_sending_request(self, response, action_name):
+    def simulate_cmd_callback(self, request, response):
         self.sending_request = 0
+        action_name = request.transition_name
         print(f"{action_name} finished")
         pnc = PNCommand.Request()
         pnc.command = 'SOFT'
         pnc.args = [action_name]
         self.pn_core_client_.call_async(pnc)
+        return response
     
     def calculate_checksum(self, data):
         checksum = 0
