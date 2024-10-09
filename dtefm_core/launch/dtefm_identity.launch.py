@@ -32,7 +32,7 @@ def generate_launch_description():
     launch_list.append(identity_initializer)
     
     intension_gate = TimerAction(
-        period=8.0,
+        period=10.0,
         actions=[
             Node(
                 package="dtefm_middle",

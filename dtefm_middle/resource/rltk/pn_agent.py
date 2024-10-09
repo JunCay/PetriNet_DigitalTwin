@@ -97,6 +97,7 @@ class Agent_PPO():
             state_p = state[0]
             state_t = state[1]
             choix = np.where((state_t[:, 0] == 1) & (state_t[:, 1] == 0))[0]
+            print(f"current choix: {choix}")
             choix = torch.tensor(choix).to(self.device)
             
             state_p = torch.tensor([state_p], dtype=torch.float).to(self.device)

@@ -311,13 +311,13 @@ class ColoredPetriNet():
 
         # print("out arcs: ", self.transitions[transition.id].out_arcs)
         for arc in self.transitions[transition.id].out_arcs.values():
-            # print(f"{arc.node_out} : {arc.node_out.visibility}")
+            print(f"{arc.node_out.name} : {arc.node_out.visibility}")
             if arc.node_out.visibility == 'visible':
                 continue
             for k in arc.node_out.marking.keys():
                 arc.node_out.marking[k] += arc.annotation[k]
-        transition.set_on_fire()
-        
+        transition.work_status = 'unfiring'
+        self.update_ready_transition()
         return True
     
     def chech_alive(self):

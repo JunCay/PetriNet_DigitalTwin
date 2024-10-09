@@ -42,11 +42,11 @@ class IdentityInitializer(Node):
     def request_by_sequence(self, client, request_sequence):
         for request in request_sequence[0]:
             client.call_async(request)
-            time.sleep(0.01)
-        time.sleep(0.01)
+            time.sleep(0.015)
+        time.sleep(0.015)
         for request in request_sequence[1]:
             client.call_async(request)
-            time.sleep(0.01)
+            time.sleep(0.015)
                 
                 
 def main(args=None):

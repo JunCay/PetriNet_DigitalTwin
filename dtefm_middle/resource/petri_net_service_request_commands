@@ -12,10 +12,13 @@
 (Reset Net)         |   SRSN    |               |                       (finished)
 (Set Inital Mark)   |   SIMK    |               |   state_, net_
 (Set Place Mark)    |   SPMK    | name, mark    |   state_, net_
+(Set Fire Trans)    |   SFRT    | name          |   state_, net_                    # move unvisible tokens only
+(Set Off Fire Trans)|   SOFT    | name          |   state_, net_
 
 (Ref State)         |   RSTS    |               |   state, net_         (finished)
 (Ref Net)           |   RNET    |               |   state, net_         (finished)
 (Prin Net)          |   RPRN    |               |   state, net_         (finished)
+(Ref Trans Status)  |   RTRN    | name          |   state, net_                     # print trans status
 
 
 test:
