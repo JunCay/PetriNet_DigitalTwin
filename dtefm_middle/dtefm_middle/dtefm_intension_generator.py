@@ -90,8 +90,8 @@ class IntensionGenerator(Node):
         self.intension_agent = Agent_PPO(self.lp, self.lt, self.action_dim, self.pn_adj, actor_lr, critic_lr, lmbda, epochs, epsilon, eps, gamma, device)
         package_share_directory = get_package_share_directory('dtefm_middle')
         memory_file_path = os.path.join(package_share_directory, 'resource/trained_memory')
-        actor_state_dict_path = os.path.join(memory_file_path, 'PPO_actor_lock.pth')
-        critic_state_dict_path = os.path.join(memory_file_path, 'PPO_critic_lock.pth')
+        actor_state_dict_path = os.path.join(memory_file_path, 'PPO_actor_lock_e.pth')
+        critic_state_dict_path = os.path.join(memory_file_path, 'PPO_critic_lock_e.pth')
         self.load_trained_model(actor_state_dict_path, critic_state_dict_path)
         
     
