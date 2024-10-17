@@ -119,7 +119,7 @@ class Place():
             return False
     
 class Transition():
-    def __init__(self, name, time=0.0, target_gesture=None, bonus=0):
+    def __init__(self, name, time=0.0, target_gesture=None, bonus=0, priority=0):
         self.id = uuid.uuid4()
         self.name = name
         self.ins = dict()
@@ -129,6 +129,7 @@ class Transition():
         self.status = 'unready'
         self.work_status = 'unfiring'
         self.init_time = 4.0
+        self.priority = priority
         self.target_gesture = target_gesture
         self.consumption = time
         self.this_consumption = self.consumption

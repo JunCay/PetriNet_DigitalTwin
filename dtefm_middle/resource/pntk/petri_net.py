@@ -1,4 +1,4 @@
-from .elements import *
+from elements import *
 import numpy as np
 import uuid
 import csv
@@ -260,7 +260,19 @@ class ColoredPetriNet():
                 arc.node_in.marking[k] -= arc.annotation[k]
         # transition.work_status = 'firing'
         # transition.time = transition.consumption
-        transition.set_on_fire(self.current_gesture)
+        if transition.consumption >= 0.001:
+            transition.set_on_fire(self.current_gesture)
+        else:
+            for arc in self.transitions[transition.id].out_arcs.values():
+                print(f"{arc.node_out.name} : {arc.node_out.visibility}")
+                if arc.node_out.visibility == 'visible':
+                    continue
+                for k in arc.node_out.marking.keys():
+                    arc.node_out.marking[k] += arc.annotation[k]
+            self.update_gesture(transition.target_gesture)
+            transition.work_status = 'unfiring'
+            self.update_ready_transition()
+            
         return True
     
     def on_fire_transition_restrict(self, transition:Transition):
@@ -494,7 +506,10 @@ class ColoredPetriNet():
                 trans_state[i, 0] = 0.0
             if transition.work_status == 'firing':
                 trans_state[i, 1] = 1.0
-                trans_state[i, 2] = (transition.this_consumption - transition.time) / transition.this_consumption
+                if transition.this_consumption >= 0.001:
+                    trans_state[i, 2] = (transition.this_consumption - transition.time) / transition.this_consumption
+                else:
+                    trans_state[i, 2] = 0
         trans_state[-1] = [1.0, 0.0, 0.0]       # add idle transition
         return trans_state
     

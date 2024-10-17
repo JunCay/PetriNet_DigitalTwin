@@ -209,13 +209,16 @@ class Identity(Node):
             self.get_logger().info(f'set place [{place_name}] marking to {self.identity_pn.name_node[place_name].marking}')
         elif command == 'RTRN':
             trans_name = args[0]
-            trans_node = self.identity_pn.name_node[trans_name]
-            print(f"{trans_name} status->{trans_node.status} | work_status->{trans_node.work_status}")
-            for arc in trans_node.in_arcs.values():
-                print(f"In node {arc.node_in.name}: {arc.node_in.visibility}, token: {arc.node_in.tokens}")
-            for arc in trans_node.out_arcs.values():
-                print(f"Out node {arc.node_out.name}: {arc.node_out.visibility}, token: {arc.node_out.tokens}")
-            
+            try:
+                trans_node = self.identity_pn.name_node[trans_name]
+                print(f"{trans_name} status->{trans_node.status} | work_status->{trans_node.work_status}")
+                for arc in trans_node.in_arcs.values():
+                    print(f"In node {arc.node_in.name}: {arc.node_in.visibility}, token: {arc.node_in.tokens}")
+                for arc in trans_node.out_arcs.values():
+                    print(f"Out node {arc.node_out.name}: {arc.node_out.visibility}, token: {arc.node_out.tokens}")
+            except:
+                self.get_logger().error(f'Error args for command {command}: {args}')
+                
         elif command == 'RSTS':
             pass
         elif command == 'RNET':
