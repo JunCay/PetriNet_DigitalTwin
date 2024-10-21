@@ -177,6 +177,15 @@ class Identity(Node):
                         self.get_logger().warn(f'Firing unready Transition {target_trans}')
             except:
                 self.get_logger().error(f'Error args for command {command}: {args}')
+        elif command == 'MOFT':
+            try:
+                target_trans = args[0]
+                if target_trans not in self.identity_pn.name_node.keys():
+                    self.get_logger().error(f'Unknown Transition for command {command}')
+                else:
+                    self.identity_pn.off_fire_transition(self.identity_pn.name_node[target_trans], debug=True) 
+            except:
+                self.get_logger().error(f'Error args for command {command}: {args}')
         elif command == 'SFRT':
             try:
                 target_trans = args[0]
@@ -314,11 +323,11 @@ class Identity(Node):
         self.pn_updator_.publish(update_msg)
         return response
         
-            
     
     def sr_state_robot_physical_callback(self, msg):
-        self.sr_state_robot.set_pos(msg.th, msg.ex, msg.h1, msg.h2, msg.z)
-    
+        # self.sr_state_p.set_pos(msg.th, msg.ex, msg.h1, msg.h2, msg.z)
+        self.get_logger().info(f'robot state update {msg.th}, {msg.ex}, {msg.h1}, {msg.h2}, {msg.z}')
+
     # TODO: Command Manual
     # RCSP-->Reference to Current State Physical
     # RCSS-->Reference to Current State Simulate

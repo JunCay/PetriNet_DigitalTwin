@@ -5,12 +5,7 @@ from launch.actions import TimerAction
 def generate_launch_description():
     launch_list = []
     
-    sr_robot_ik_server = Node(
-        package="dtefm_middle",
-        executable="sr_robot_ik_server",
-        output="log",
-    )
-    launch_list.append(sr_robot_ik_server)
+    
     
     # identity_node = Node(
     #     package="dtefm_middle",
@@ -32,7 +27,7 @@ def generate_launch_description():
     launch_list.append(identity_initializer)
     
     intension_gate = TimerAction(
-        period=10.0,
+        period=11.0,
         actions=[
             Node(
                 package="dtefm_middle",

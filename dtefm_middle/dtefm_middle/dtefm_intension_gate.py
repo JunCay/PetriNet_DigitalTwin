@@ -23,8 +23,10 @@ class IntensionGate(Node):
         self.pn_core_client_ = self.create_client(PNCommand, '/identity/pn_srv/core')
         self.pn_client_ = self.create_client(PNCommand, '/identity/pn_srv/inner')
         self.simulate_command_client_ = self.create_client(SRTcpCommunication, '/sr/command/simulate')
+        self.physical_command_client_ = self.create_client(SRTcpCommunication, '/ether_bridge/physical')
         self.intension_subscriber_ = self.create_subscription(GCPNActionMsg, '/identity/agent/action', self.intension_distribute_callback, 10)
-        self.command_monitor_server_ = self.create_service(SRTcpCommunication, '/sr/command/simulate/callback', self.simulate_cmd_callback)
+        self.simulate_command_monitor_server_ = self.create_service(SRTcpCommunication, '/sr/command/simulate/callback', self.simulate_cmd_callback)
+        self.physical_command_monitor_server_ = self.create_service(SRTcpCommunication, '/sr/command/physical/callback', self.physical_cmd_callback)
         
         
         self.identity_gate_control_server_ = self.create_service(IntensionGateControlSrv, '/identity/gate/control', self.intension_gate_control_callback)
@@ -35,7 +37,9 @@ class IntensionGate(Node):
         
         self.sending_request = 0
         self.last_action_index = 0
+        time.sleep(2)
         self.update_pn()
+        self.get_logger().info(f"pn initial command sent")
         
         self.a2c_initial_file = os.path.join(inital_file_path, f'neural_petri_net_lock_action_command.csv')
         self.get_action_command_from_file(self.a2c_initial_file)
@@ -71,8 +75,11 @@ class IntensionGate(Node):
         request = PNCommand.Request()
         request.command = 'RNET'
         self.pn_core_client_.call_async(request).add_done_callback(self.update_pn_)
+        self.get_logger().info(f"intension gate update_pn command sent")
         
     def update_pn_(self, result):
+        self.get_logger().info(f"intension gate update_pn command received callback")
+
         response = result.result()
         places = response.places
         transitions = response.transitions
@@ -117,7 +124,6 @@ class IntensionGate(Node):
             self.get_logger().info(f"action {action_index} muted")
             return
         
-        
         action_name = self.transition_list[action_index].name
         
         if self.intension_gate_state['remain'] == 1:
@@ -149,14 +155,41 @@ class IntensionGate(Node):
                 self.get_logger().info(f"s: {command}")
                 
             elif self.intension_gate_state['execute'] == 1:
-                self.get_logger().info(f"action {action_index} sent to physical executor")
+                command = self.action2command[str(action_index)]
+                if command == '':
+                    self.get_logger().info(f"place holder command")
+                    return
+                request = SRTcpCommunication.Request()
+                request.data = command
+                request.transition_name = action_name
+                self.sending_request = 1
                 
+                pnc = PNCommand.Request()
+                pnc.command = 'MFRT'
+                pnc.args = [action_name]
+                self.pn_core_client_.call_async(pnc)
+                
+                self.physical_command_client_.call_async(request)
+                self.sequence_number = (self.sequence_number + 1)%100
+                # self.get_logger().info(f"action {action_index} sent to physical executor")
+                self.get_logger().info(f"sent p: {command}")
+
     def simulate_cmd_callback(self, request, response):
         self.sending_request = 0
         action_name = request.transition_name
         print(f"{action_name} finished")
         pnc = PNCommand.Request()
         pnc.command = 'SOFT'
+        pnc.args = [action_name]
+        self.pn_core_client_.call_async(pnc)
+        return response
+    
+    def physical_cmd_callback(self, request, response):
+        self.sending_request = 0
+        action_name = request.transition_name
+        self.get_logger().error(f"{action_name} finished")
+        pnc = PNCommand.Request()
+        pnc.command = 'MOFT'
         pnc.args = [action_name]
         self.pn_core_client_.call_async(pnc)
         return response

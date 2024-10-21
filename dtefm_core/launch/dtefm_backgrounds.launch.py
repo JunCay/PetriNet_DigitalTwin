@@ -35,6 +35,13 @@ def generate_launch_description():
         output="log",
     )
     launch_list.append(identity_gate_node)
+
+    sr_robot_ik_server = Node(
+        package="dtefm_middle",
+        executable="sr_robot_ik_server",
+        output="log",
+    )
+    launch_list.append(sr_robot_ik_server)
     
     # ros2 run ros_tcp_endpoint default_server_endpoint --ros-args -p ROS_IP:=0.0.0.0
     ether_gate_s = Node(

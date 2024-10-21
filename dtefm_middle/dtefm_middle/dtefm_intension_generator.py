@@ -45,14 +45,17 @@ class IntensionGenerator(Node):
         print(f"intension generator on device: {self.device}")
         self.pn_adj = None
         self.intension_agent = None
+        time.sleep(2)
         self.update_pn()
         
     def update_pn(self):
         request = PNCommand.Request()
         request.command = 'RNET'
         self.pn_core_client_.call_async(request).add_done_callback(self.update_pn_adj)
+        self.get_logger().info(f"intension generator update_pn command sent")
     
     def update_pn_adj(self, result):
+        self.get_logger().info(f"intension generator update_pn command received callback")
         response = result.result()
         places = response.places
         transitions = response.transitions
@@ -90,14 +93,14 @@ class IntensionGenerator(Node):
         self.intension_agent = Agent_PPO(self.lp, self.lt, self.action_dim, self.pn_adj, actor_lr, critic_lr, lmbda, epochs, epsilon, eps, gamma, device)
         package_share_directory = get_package_share_directory('dtefm_middle')
         memory_file_path = os.path.join(package_share_directory, 'resource/trained_memory')
-        actor_state_dict_path = os.path.join(memory_file_path, 'PPO_actor_lock.pth')
-        critic_state_dict_path = os.path.join(memory_file_path, 'PPO_critic_lock.pth')
+        actor_state_dict_path = os.path.join(memory_file_path, 'PPO_actor_lock_s.pth')
+        critic_state_dict_path = os.path.join(memory_file_path, 'PPO_critic_lock_s.pth')
         self.load_trained_model(actor_state_dict_path, critic_state_dict_path)
         
     
     def load_trained_model(self, actor_state_dict_path, critic_state_dict_path):
-        actor_state_dict = torch.load(actor_state_dict_path)
-        critic_state_dict = torch.load(critic_state_dict_path)
+        actor_state_dict = torch.load(actor_state_dict_path, map_location=torch.device('cpu'))
+        critic_state_dict = torch.load(critic_state_dict_path, map_location=torch.device('cpu'))
         
         self.intension_agent.actor.load_state_dict(actor_state_dict)
         self.intension_agent.critic.load_state_dict(critic_state_dict)

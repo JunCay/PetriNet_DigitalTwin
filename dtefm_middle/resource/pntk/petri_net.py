@@ -261,6 +261,30 @@ class ColoredPetriNet():
         transition.set_on_fire()
         return True
     
+    def off_fire_transition(self, transition:Transition, debug):
+        """
+        Set the transition to firing status. Except influnce visible.
+
+        Args:
+            transition (Transition): The transition to be started.
+
+        Returns:
+            Boolean: if the transition is successfully started.
+        """
+        # print(f"set off firing transition: {transition.name}")
+        if transition not in self.transitions.values():
+            if debug:
+                print(f"Transition not found in current petri net")
+            return False
+
+        # print("out arcs: ", self.transitions[transition.id].out_arcs)
+        for arc in self.transitions[transition.id].out_arcs.values():
+            for k in arc.node_out.marking.keys():
+                arc.node_out.marking[k] += arc.annotation[k]
+        transition.work_status = 'unfiring'
+        self.update_ready_transition()
+        return True
+
     def on_fire_transition_restrict(self, transition:Transition):
         """
         Set the transition to firing status. Except influnce visible.

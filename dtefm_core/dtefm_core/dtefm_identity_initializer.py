@@ -17,8 +17,11 @@ class IdentityInitializer(Node):
         super().__init__(name)
         self.identity_pn_initializer_client_ = self.create_client(PNCommand, '/identity/pn_srv/core')
         # self.pn_initial_command_file = os.path.join(inital_file_path, f'dtefm_pn_initial_command_{initial_net}.csv')
-        self.pn_initial_command_file = os.path.join(inital_file_path, f'neural_petri_net_lock.csv')
+        self.pn_initial_command_file = os.path.join(inital_file_path, f'neural_petri_net_lock_s.csv')
         self.pn_initial_commands = self.get_identity_pn_initial_command_from_file(self.pn_initial_command_file)
+        self.get_logger().info(f"ready to send initial command")
+        print(self.pn_initial_commands)
+        time.sleep(0.02)
         self.request_by_sequence(self.identity_pn_initializer_client_, self.pn_initial_commands)
         # self.destroy_node()
         
